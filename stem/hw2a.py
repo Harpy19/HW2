@@ -18,11 +18,17 @@ def main():
     """
     #region testing user input
     # The following code solicites user input through the CLI.
-    mean = input("Population mean? ")
-    stDev = input("Standard deviation?")
-    c = input("c value?")
-    GT = True if input("Probability greater than c?").lower() in ["y","yes","true"] else "False"
-    print("P(x"+(">" if GT else "<") + c +"|"+mean+", "+stDev +")")
+    mean1 = 100
+    stDev1 = 12.5
+    c1 = 105
+    prob1 = Probability(GPDF, (mean1, stDev1), c1, GT=False) #copilot
+    print("P(x<{:.2f}|N({},{}))={:.2f}".format(c1, mean1, stDev1, prob1)) #changed format of given code
+
+    mean2 = 100
+    stDev2 = 3
+    c2 = mean2 + 2 *stDev2
+    prob2 = Probability(GPDF, (mean2, stDev2), c2, GT=True) #copilot
+    print("P(x>{:.2f}|N({},{}))={:.2f}".format(c2, mean2, stDev2, prob2)) #changed format of given code
     #endregion
 #endregion
 

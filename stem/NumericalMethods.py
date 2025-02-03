@@ -1,8 +1,8 @@
 #region imports
-import Gauss_Elim as GE  # this is the module from lecture 2 that has usefule matrix manipulation functions
+import Gauss_Elim as GE  # this is the module from lecture 2 that has useful matrix manipulation functions
 from math import sqrt, pi, exp, cos
 #endregion
-
+                                            #majority of this code is from copilot
 #region function definitions
 def Probability(PDF, args, c, GT=True):
     """
@@ -20,8 +20,12 @@ def Probability(PDF, args, c, GT=True):
     :return: probability value
     """
     mu, sig = args
-    p = Simpson(PDF, (mu, sig, mu - 5 * sig, 0))
-    return p
+    lhl = mu - 5 * sig
+    rhl = c
+    if GT:
+        return 1 - Simpson(PDF, (mu, sig, lhl, rhl))
+    else:
+        return Simpson(PDF, (mu, sig, lhl, rhl))
 
 def GPDF(args):
     """
@@ -54,8 +58,14 @@ def Simpson(fn, args, N=100):
     :param args: a tuple containing (mean, stDev, lhl, rhl)
     :return: the area beneath the function between lhl and rhl
     """
-    area = 0.5
-    return area
+    mu, sig, lhl, rhl = args
+    h = (rhl - lhl) / N
+    s = fn((lhl, mu, sig)) + fn((rhl, mu, sig))
+    for i in range(1, N, 2):
+        s += 4 * fn((lhl + i * h, mu, sig))
+    for i in range(2, N-1, 2):
+        s += 2 * fn((lhl + i * h, mu, sig))
+    return s * h / 3
 
 def Secant(fcn, x0, x1, maxiter=10, xtol=1e-5):
     """
@@ -68,7 +78,16 @@ def Secant(fcn, x0, x1, maxiter=10, xtol=1e-5):
     :param xtol:  exit if the |xnewest - xprevious| < xtol
     :return: tuple with: (the final estimate of the root (most recent value of x), number of iterations)
     """
-    pass
+    for _ in range(maxiter):
+        f0 = fcn(x0)
+        f1 = fcn(x1)
+        if abs(f1 - f0) < 1e-12:
+            raise ValueError("Function values at x0 and x1 are too close")
+        x2 = x1 - f1 * (x1 - x0) / (f1 - f0)
+        if abs(x2 - x1) < xtol:
+            return x2
+        x0, x1 = x1, x2
+    return x1
 
 def GaussSeidel(Aaug, x, Niter = 15):
     """
@@ -79,7 +98,12 @@ def GaussSeidel(Aaug, x, Niter = 15):
     :return: the solution vector x
     """
     Aaug = GE.MakeDiagDom(Aaug)
-    pass
+    n = len(Aaug)
+    for _ in range(Niter):
+        for i in range(n):
+            sum1 = sum(Aaug[i][j] * x[j] for j in range(n) if j !=i)
+            x[i] = (Aaug[i][-1] - sum1) / Aaug[i][i]
+    return x
 
 def main():
     '''
@@ -88,7 +112,7 @@ def main():
     '''
     #region testing GPDF
     fx = GPDF((0,0,1))
-    print("{:0.5f}".format(fx))  # Does this match the expected value?
+    print("={:0.5f}".format(fx))  # Does this match the expected value?   #added p0 for a variable
     #edregion
 
     #region testing Simpson
